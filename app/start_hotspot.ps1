@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
 start_hotspot.ps1 — 热点模式一键启动（默认链路）
 

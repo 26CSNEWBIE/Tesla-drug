@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
 stop_hotspot.ps1 — 停掉热点模式起的三个组件（443 拦截 / DNS 劫持 / 看板 8900）
 
