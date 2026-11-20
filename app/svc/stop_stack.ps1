@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
 stop_stack.ps1 — 停掉常驻栈（stack.py + dns + reverse + proxy + web）
 

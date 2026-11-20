@@ -271,6 +271,25 @@ if ($LASTEXITCODE -ge 8) {
 }
 Good ("已复制 {0} 个文件（logs / venv 未被覆盖）" -f (Get-ChildItem $src -Recurse -File).Count)
 
+# PowerShell 5.1 按系统 ANSI 读 .ps1；无 BOM 的中文会变成乱码并触发语法错误。
+# 复制后统一补 UTF-8 BOM，避免 "哈希文本中的键后面缺少 = 运算符" 这类报错。
+$bomFixed = 0
+Get-ChildItem -LiteralPath $Target -Recurse -Filter '*.ps1' -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notlike "*\venv\*" } |
+    ForEach-Object {
+        $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+        $hasBom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
+        if (-not $hasBom) {
+            $out = New-Object 'byte[]' ($bytes.Length + 3)
+            $out[0] = 0xEF; $out[1] = 0xBB; $out[2] = 0xBF
+            [Array]::Copy($bytes, 0, $out, 3, $bytes.Length)
+            [System.IO.File]::WriteAllBytes($_.FullName, $out)
+            $script:bomFixed++
+        }
+    }
+if ($bomFixed -gt 0) { Good ("已为 {0} 个 .ps1 补 UTF-8 BOM" -f $bomFixed) }
+else { Good '所有 .ps1 均带 UTF-8 BOM' }
+
 # ---------------------------------------------------------------- 3 venv
 Step '3/7' 'Python 虚拟环境'
 $venvDir = Join-Path $Target 'venv'
